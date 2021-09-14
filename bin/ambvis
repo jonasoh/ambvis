@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+
+# shell wrapper to start ambvis program
+
+import ambvis.ambvis
+ambvis.ambvis.main()
