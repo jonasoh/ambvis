@@ -1,6 +1,6 @@
 import inspect
 
-import globals
+from ambvis import globals
 
 
 def public_route(f):

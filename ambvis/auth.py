@@ -2,10 +2,10 @@ import hashlib
 
 from flask import Blueprint, request, abort, session, redirect, url_for, flash, render_template
 
-import globals
-from config import Config
-from logger import log, debug
-from decorators import public_route
+from ambvis import globals
+from ambvis.config import Config
+from ambvis.logger import log, debug
+from ambvis.decorators import public_route
 
 cfg = Config()
 bp = Blueprint('auth', __name__, url_prefix='/auth')

@@ -3,7 +3,7 @@
 #
 
 import sys
-from config import Config
+from ambvis.config import Config
 
 cfg = Config()
 

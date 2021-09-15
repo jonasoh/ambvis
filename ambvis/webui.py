@@ -3,12 +3,11 @@ import hashlib
 
 from flask import Flask, request, abort, flash, redirect, url_for, render_template, session
 
-import auth
-import globals
-from config import Config
-from auth import check_pass
-from logger import log, debug
-from decorators import public_route, not_while_running
+from ambvis import auth
+from ambvis import globals
+from ambvis.config import Config
+from ambvis.logger import log, debug
+from ambvis.decorators import public_route, not_while_running
 
 cfg = Config()
 
@@ -33,5 +32,5 @@ app = create_app()
 def index():
     return render_template('index.jinja')
 
-
-app.run(host="127.0.0.1", port=8080)
+def run():
+    app.run(host="127.0.0.1", port=8080)

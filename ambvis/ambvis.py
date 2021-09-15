@@ -4,10 +4,12 @@
 #   control program for the AMBvis web interface
 
 import os
+import sys
 import textwrap
 import argparse
 
-from config import Config
+from ambvis import webui
+from ambvis.config import Config
 
 cfg = Config()
 
@@ -51,7 +53,6 @@ def install_service():
         print("Could not write file (~/.config/systemd/user/ambvis.service):", e)
     print("Systemd service file installed.")
 
-
 def main():
     if options.reset:
         print("Clearing all configuration values.")
@@ -72,3 +73,8 @@ def main():
             print("Debug mode on.")
         else:
             print("Debug mode off")
+
+    if any([options.install, options.resetpw, options.toggle_debug]):
+        sys.exit()
+
+    webui.run()
