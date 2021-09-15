@@ -1,13 +1,16 @@
 import os
 import hashlib
 
-from flask import Flask, request, abort, flash, redirect, url_for, render_template, session
+from flask import Flask, Response, request, abort, flash, redirect, url_for, render_template, session
 
 from ambvis import auth
 from ambvis import globals
 from ambvis.config import cfg
 from ambvis.logger import log, debug
 from ambvis.decorators import public_route, not_while_running
+
+from ambvis.hw import cam
+cam.streaming = False
 
 def create_app():
     app = Flask(__name__)
@@ -31,3 +34,11 @@ def index():
 
 def run():
     app.run(host="0.0.0.0", port=8080)
+
+@app.route('/stream.mjpg')
+def live_stream():
+    return Response(cam.stream_generator(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/still.png')
+def get_image():
+    return Response(cam.image, mimetype='image/png')
