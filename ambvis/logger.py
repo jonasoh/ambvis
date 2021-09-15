@@ -3,9 +3,7 @@
 #
 
 import sys
-from ambvis.config import Config
-
-cfg = Config()
+from ambvis.config import cfg
 
 
 def log(msg):

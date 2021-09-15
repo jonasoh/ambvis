@@ -9,9 +9,7 @@ import textwrap
 import argparse
 
 from ambvis import webui
-from ambvis.config import Config
-
-cfg = Config()
+from ambvis.config import cfg
 
 parser = argparse.ArgumentParser(
     description=textwrap.dedent("""\

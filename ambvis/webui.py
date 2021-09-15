@@ -5,12 +5,9 @@ from flask import Flask, request, abort, flash, redirect, url_for, render_templa
 
 from ambvis import auth
 from ambvis import globals
-from ambvis.config import Config
+from ambvis.config import cfg
 from ambvis.logger import log, debug
 from ambvis.decorators import public_route, not_while_running
-
-cfg = Config()
-
 
 def create_app():
     app = Flask(__name__)

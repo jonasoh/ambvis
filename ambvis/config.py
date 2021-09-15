@@ -2,7 +2,6 @@ import os
 import sys
 import json
 
-
 def log(msg):
     sys.stderr.write(msg + '\n')
     sys.stderr.flush()
@@ -63,3 +62,6 @@ class Config(object):
         if key in self.config:
             del self.config[key]
             self.write()
+
+
+cfg = Config()
