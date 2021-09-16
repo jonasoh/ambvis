@@ -28,7 +28,7 @@ class StreamingOutput(object):
 
 class Camera(object):
     def __init__(self):
-        self.camera = PiCamera()
+        self.camera = PiCamera(resolution="1024x768")
         self._streaming = False
         self.still_output = io.BytesIO()
         self.streaming_output = StreamingOutput()
@@ -40,6 +40,7 @@ class Camera(object):
         self.close()
 
     def close(self):
+        print("closing camera")
         self.camera.close()
 
     @property

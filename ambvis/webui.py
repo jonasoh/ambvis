@@ -23,6 +23,8 @@ def create_app():
     return app
 
 app = create_app()
+app.jinja_env.trim_blocks = True
+app.jinja_env.lstrip_blocks = True
 
 
 @app.route('/index.html')
@@ -31,12 +33,17 @@ def index():
     return render_template('index.jinja')
 
 def run():
-    cam.streaming = True
-    app.run(host="0.0.0.0", port=8080)
+    cam.streaming = False
+    try:
+        app.run(host="0.0.0.0", port=8080)
+    finally:
+        cam.close()
+
 
 @app.route('/stream.mjpg')
 def live_stream():
     return Response(cam.stream_generator, mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 @app.route('/still.png')
 def get_image():
