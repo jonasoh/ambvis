@@ -10,7 +10,6 @@ from ambvis.logger import log, debug
 from ambvis.decorators import public_route, not_while_running
 
 from ambvis.hw import cam
-cam.streaming = False
 
 def create_app():
     app = Flask(__name__)
@@ -18,7 +17,6 @@ def create_app():
         secret = hashlib.sha1(os.urandom(16))
         cfg.set('secret', secret.hexdigest())
     app.config.update(
-        DEBUG=cfg.get('debug'),
         SECRET_KEY=cfg.get('secret')
     )
     app.register_blueprint(auth.bp)
@@ -33,11 +31,12 @@ def index():
     return render_template('index.jinja')
 
 def run():
+    cam.streaming = True
     app.run(host="0.0.0.0", port=8080)
 
 @app.route('/stream.mjpg')
 def live_stream():
-    return Response(cam.stream_generator(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(cam.stream_generator, mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/still.png')
 def get_image():
