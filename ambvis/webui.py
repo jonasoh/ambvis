@@ -6,6 +6,7 @@ from flask import Flask, Response, request, abort, flash, redirect, url_for, ren
 from ambvis import auth
 from ambvis import globals
 from ambvis.config import cfg
+from ambvis import filemanager
 from ambvis.logger import log, debug
 from ambvis.decorators import public_route, not_while_running
 
@@ -20,6 +21,7 @@ def create_app():
         SECRET_KEY=cfg.get('secret')
     )
     app.register_blueprint(auth.bp)
+    app.register_blueprint(filemanager.bp)
     return app
 
 app = create_app()
