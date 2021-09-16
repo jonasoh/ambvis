@@ -1,16 +1,19 @@
 import os
 import hashlib
 
+import cherrypy
+from ws4py.websocket import WebSocket
+from wsgiref.simple_server import make_server
+from ws4py.server.cherrypyserver import WebSocketPlugin, WebSocketTool
 from flask import Flask, Response, request, abort, flash, redirect, url_for, render_template, session
 
 from ambvis import auth
-from ambvis import globals
+from ambvis.hw import cam
 from ambvis.config import cfg
 from ambvis import filemanager
 from ambvis.logger import log, debug
+from ambvis.video_stream import Broadcaster
 from ambvis.decorators import public_route, not_while_running
-
-from ambvis.hw import cam
 
 def create_app():
     app = Flask(__name__)
@@ -28,6 +31,9 @@ app = create_app()
 app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
 
+WebSocketPlugin(cherrypy.engine).subscribe()
+cherrypy.tools.websocket = WebSocketTool()
+
 
 @app.route('/index.html')
 @app.route('/')
@@ -35,18 +41,35 @@ def index():
     return render_template('index.jinja')
 
 def run():
-    cam.streaming = False
+    cam.streaming = True
+    broadcast_thread = Broadcaster(camera=cam)
     try:
-        app.run(host="0.0.0.0", port=8080)
+        #app.run(host="0.0.0.0", port=8080)
+        broadcast_thread.daemon = True
+        broadcast_thread.start()
+        cherrypy.tree.graft(app, '/')
+        cherrypy.tree.mount(WebSocketRoot, '/video', config={'/frame': {'tools.websocket.on': True, 'tools.websocket.handler_cls': StreamingWebSocket}})
+        cherrypy.engine.start()
+        cherrypy.engine.block()
     finally:
         cam.close()
-
-
-@app.route('/stream.mjpg')
-def live_stream():
-    return Response(cam.stream_generator, mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @app.route('/still.png')
 def get_image():
     return Response(cam.image, mimetype='image/png')
+
+
+class StreamingWebSocket(WebSocket):
+    def opened(self):
+        print("New client connected")
+
+
+class WebSocketRoot:
+    @cherrypy.expose
+    def index():
+        pass
+    
+    @cherrypy.expose
+    def frame():
+        pass

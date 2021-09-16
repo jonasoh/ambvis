@@ -15,20 +15,21 @@ class StreamingOutput(object):
         self.condition = Condition()
 
     def write(self, buf):
-        if buf.startswith(b'\xff\xd8'):
+        if buf.startswith(b'\x00\x00\x00\x01'):
             # New frame, copy the existing buffer's content and notify all
             # clients it's available
-            self.buffer.truncate()
             with self.condition:
-                self.frame = self.buffer.getvalue()
                 self.buffer.seek(0)
+                self.frame = self.buffer.read()
+                self.buffer.seek(0)
+                self.buffer.truncate()
                 self.condition.notify_all()
         return self.buffer.write(buf)
 
 
 class Camera(object):
     def __init__(self):
-        self.camera = PiCamera(resolution="1024x768")
+        self.camera = PiCamera()
         self._streaming = False
         self.still_output = io.BytesIO()
         self.streaming_output = StreamingOutput()
@@ -40,7 +41,6 @@ class Camera(object):
         self.close()
 
     def close(self):
-        print("closing camera")
         self.camera.close()
 
     @property
@@ -51,7 +51,7 @@ class Camera(object):
     def streaming(self, val):
         if self._streaming != val:
             if not self._streaming:
-                self.camera.start_recording(self.streaming_output, format='mjpeg', resize='1024x768')
+                self.camera.start_recording(self.streaming_output, format='h264', profile='baseline', resize=(1280, 720))
                 self._streaming = True
             else:
                 self.camera.stop_recording()
@@ -66,17 +66,6 @@ class Camera(object):
             self.still_output.seek(0)
             return self.still_output
 
-    @property
-    def stream_generator(self):
-        while True:
-            with self.streaming_output.condition:
-                got_frame = self.streaming_output.condition.wait(timeout=0.1)
-            if got_frame:
-                yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + self.streaming_output.frame + b'\r\n')
-            else:
-                # failed to acquire an image; return nothing instead of waiting
-                yield b''
-
 
 class Motor(object):
     def __init__(self):
@@ -89,4 +78,3 @@ class Motor(object):
 
 cam = Camera()
 motor = Motor()
-
