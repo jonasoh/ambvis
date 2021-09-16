@@ -33,6 +33,15 @@ class Camera(object):
         self.still_output = io.BytesIO()
         self.streaming_output = StreamingOutput()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+    def close(self):
+        self.camera.close()
+
     @property
     def streaming(self):
         return self._streaming
