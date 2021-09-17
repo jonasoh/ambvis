@@ -8,7 +8,7 @@ from ws4py.server.cherrypyserver import WebSocketPlugin, WebSocketTool
 from flask import Flask, Response, request, abort, flash, redirect, url_for, render_template, session
 
 from ambvis import auth
-from ambvis.hw import cam
+from ambvis.hw import cam, motor
 from ambvis.config import cfg
 from ambvis import filemanager
 from ambvis.logger import log, debug
@@ -54,6 +54,7 @@ def run():
         cherrypy.engine.block()
     finally:
         cam.close()
+        motor.close()
 
 
 @app.route('/still.png')
