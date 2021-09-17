@@ -8,6 +8,7 @@ from ws4py.server.cherrypyserver import WebSocketPlugin, WebSocketTool
 from flask import Flask, Response, request, abort, flash, redirect, url_for, render_template, session
 
 from ambvis import auth
+from ambvis import motor_control
 from ambvis.hw import cam, motor
 from ambvis.config import cfg
 from ambvis import filemanager
@@ -25,6 +26,7 @@ def create_app():
     )
     app.register_blueprint(auth.bp)
     app.register_blueprint(filemanager.bp)
+    app.register_blueprint(motor_control.bp)
     return app
 
 app = create_app()
