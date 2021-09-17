@@ -145,12 +145,6 @@ class Motor(object):
 
         self._position = self._position + steps
 
-    def move_rel(self, steps):
-        if steps > 0:
-            self.direction = 'CCW'
-        else:
-            self.direction = 'CW'
-
     def stepper_config(self, addr=0, motor='A', dir='NA', resolution='M8', speed='NA', accelleration='NA'):
         '''configures stepper motor and saves values for future reference.'''
         self._direction = self._direction if dir == 'NA' else dir
