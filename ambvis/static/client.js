@@ -1,3 +1,29 @@
+/*
+Code derived from https://github.com/Dregu/visio and https://github.com/Onixaz/picamera-h264-web-streaming
+
+MIT License
+
+Copyright (c) 2017 Dregu
+Copyright (c) 2020 Juozas Polikevičius
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 startStream('container', window.location.protocol.replace(/http/, 'ws')+'//'+window.location.hostname+':8080/video/frame', true, 'auto', 0)
 
 function startStream(playerId, wsUri, useWorker, webgl, reconnectMs) {
@@ -5,6 +31,7 @@ function startStream(playerId, wsUri, useWorker, webgl, reconnectMs) {
 		window.player = new Player({ useWorker: useWorker, webgl: webgl, size: { width: 848, height: 480 } })
 		var playerElement = document.getElementById(playerId)
 		playerElement.appendChild(window.player.canvas)
+		window.player.canvas.classList.add('pure-img');
 		window.player.canvas.addEventListener('dblclick', function() {
 			if(window.player.canvas.requestFullScreen) window.player.canvas.requestFullScreen();
 			else if(window.player.canvas.webkitRequestFullScreen) window.player.canvas.webkitRequestFullScreen();
@@ -28,18 +55,6 @@ function startStream(playerId, wsUri, useWorker, webgl, reconnectMs) {
 			window.player.canvas.style.border = '1px solid #eee'
 		}
 	}
-
-	/* The separator below isn't needed as separator is implemented on the server side  
-
-	var separator = new Uint8Array([0, 0, 0, 1])
-	function addSeparator(buffer) {
-		var tmp = new Uint8Array(4+buffer.byteLength)
-		tmp.set(separator, 0)
-		tmp.set(new Uint8Array(buffer), 4)
-		return tmp.buffer
-	}
-
-	*/
 
 	var ws = new WebSocket(wsUri)
 	ws.binaryType = 'arraybuffer'
