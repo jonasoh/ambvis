@@ -49,6 +49,7 @@ def run():
         broadcast_thread.start()
         cherrypy.tree.graft(app, '/')
         cherrypy.tree.mount(WebSocketRoot, '/video', config={'/frame': {'tools.websocket.on': True, 'tools.websocket.handler_cls': StreamingWebSocket}})
+        cherrypy.server.bind_addr = ('0.0.0.0', 8080)
         cherrypy.engine.start()
         cherrypy.engine.block()
     finally:
