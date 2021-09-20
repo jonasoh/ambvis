@@ -25,3 +25,23 @@ def move(type, val):
             return Response(str(e), 500)
     else:
         abort(404)
+
+@bp.route('/status/homed')
+def homed():
+    return Response(str(motor.homed), 200)
+
+@bp.route('/status/powered')
+def powered():
+    return Response(str(motor.powered), 200)
+
+@bp.route('/power/<val>')
+def power(val):
+    val = val.lower()
+    if val in ['on', 'off']:
+        if val == 'on':
+            motor.powered = True
+        else:
+            motor.powered = False
+    else:
+        abort(404)
+    return Response('OK', 200)
