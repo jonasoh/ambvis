@@ -77,18 +77,23 @@ class Motor(object):
     def __init__(self):
         self._position = None
         self.hw = MOTOR
-        self.hw.RESET(0)
+        self.reset()
         self.hw.enablestepSTOPint(0, 'A')
         self._direction = 'CW'
         self._accel = 2
         self._speed = 1600
+        self._powered = False
         # set up motor to run clockwise, with 8 microstep resolution,
         # turning 1600 steps per second (corresponding to 1 mm on the screw),
         # using 2 seconds to accellerate to the maximum speed.
         self.stepper_config()
 
-    def close(self):
+    def reset(self):
         self.hw.RESET(0)
+        self._powered = False
+
+    def close(self):
+        self.reset()
 
     def find_home(self):
         oldspeed = self._speed
@@ -150,6 +155,7 @@ class Motor(object):
         self._direction = self._direction if dir == 'NA' else dir
         self._speed = self._speed if speed == 'NA' else speed
         self._accel = self._accel if accelleration == 'NA' else accelleration
+        self._powered = True
         self.hw.stepperCONFIG(addr=addr, motor=motor, dir=self._direction, resolution=resolution,
                               rate=self._speed, acceleration=self._accel)
 
@@ -169,6 +175,23 @@ class Motor(object):
     @speed.setter
     def speed(self, val):
         self.stepper_config(speed=val)
+
+    @property
+    def homed(self):
+        return True if self._position is not None else False
+
+    @property
+    def powered(self):
+        return self._powered
+
+    @powered.setter
+    def powered(self, val):
+        if val in [True, False] and val != self._powered:
+            if val:
+                self.stepper_config()
+            else:
+                self.hw.stepperOFF(0)
+                self._powered = False
 
 
 cam = Camera()
