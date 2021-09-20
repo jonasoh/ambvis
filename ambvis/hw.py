@@ -190,7 +190,7 @@ class Motor(object):
             if val:
                 self.stepper_config()
             else:
-                self.hw.stepperOFF(0)
+                self.hw.stepperOFF(0, 'A')
                 self._powered = False
 
 
