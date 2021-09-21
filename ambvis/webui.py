@@ -14,6 +14,7 @@ from ambvis import motor_control
 from ambvis.hw import cam, motor
 from ambvis.config import cfg
 from ambvis import filemanager
+from ambvis import system_settings
 from ambvis.logger import log, debug
 from ambvis.video_stream import Broadcaster
 from ambvis.decorators import public_route, not_while_running
@@ -29,6 +30,7 @@ def create_app():
     app.register_blueprint(auth.bp)
     app.register_blueprint(filemanager.bp)
     app.register_blueprint(motor_control.bp)
+    app.register_blueprint(system_settings.bp)
     return app
 
 app = create_app()

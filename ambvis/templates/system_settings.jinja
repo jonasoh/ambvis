@@ -1,0 +1,12 @@
+{% extends "layout.jinja" %}
+{% block title %}Main view{% endblock %}
+{% block content %}
+<div class="header">
+    <h1>System settings</h1>
+</div>
+<div class="content">
+    <a href="/restart" class="pure-button">Restart web UI</a>
+    <a href="/reboot" class="pure-button">Reboot system</a>
+    <a href="/shutdown" class="pure-button">Shut down system</a>    
+</div>
+{% endblock %}
