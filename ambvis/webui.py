@@ -1,5 +1,7 @@
 import os
 import hashlib
+import subprocess
+from threading import Timer
 
 import cherrypy
 from ws4py.websocket import WebSocket
@@ -62,6 +64,41 @@ def run():
 @app.route('/still.png')
 def get_image():
     return Response(cam.image, mimetype='image/png')
+
+
+def run_shutdown():
+    subprocess.run(['sudo', 'shutdown', '-h', 'now'])
+
+@not_while_running
+@app.route('/shutdown')
+def shutdown():
+    t = Timer(1, run_shutdown)
+    t.start()
+    return render_template('shutdown.jinja', message='Shutting down', refresh=0, longmessage="Allow the shutdown process to finish before turning the power off.")
+
+
+def run_reboot():
+    subprocess.run(['sudo', 'shutdown', '-r', 'now'])
+
+
+@not_while_running
+@app.route('/reboot')
+def reboot():
+    t = Timer(1, run_reboot)
+    t.start()
+    return render_template('shutdown.jinja', message='Rebooting', refresh=120, longmessage='Please allow up to two minutes for system to return to usable state.')
+
+
+def run_restart():
+    cherrypy.engine.restart()
+
+
+@not_while_running
+@app.route('/restart')
+def restart():
+    t = Timer(1, run_restart)
+    t.start()
+    return render_template('shutdown.jinja', message='Restarting web UI', refresh=15, longmessage='Please allow up to 15 seconds for the web UI to restart.')
 
 
 class StreamingWebSocket(WebSocket):

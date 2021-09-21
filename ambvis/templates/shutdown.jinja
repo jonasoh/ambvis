@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMBvis: {{ message }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='pure-min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='grids-responsive-min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='ambvis.css') }}">
+{% if refresh > 0 %}
+    <meta http-equiv="refresh" content="{{ refresh }}; url=/">
+{% endif %}
+</head>
+<body>
+<div class="header">
+    <h1>{{ message }}</h1>
+</div>
+<div class="content">
+    {{ longmessage }}
+</div>
