@@ -81,7 +81,7 @@ class Motor(object):
         self.hw.enablestepSTOPint(0, 'A')
         self._direction = 'CW'
         self._accel = 2
-        self._speed = 1600
+        self._speed = 400
         self._powered = False
         # set up motor to run clockwise, with 8 microstep resolution,
         # turning 1600 steps per second (corresponding to 1 mm on the screw),
@@ -99,8 +99,15 @@ class Motor(object):
         oldspeed = self._speed
         oldaccel = self._accel
 
+        # first, back off 2 mm to clear the endstop
+        # the state of the endstop cannot be reliably read via the interrupt registers
+        self.stepper_config(dir='CCW', speed=1600)
+        self.hw.stepperMOVE(0, 'A', 200)
+
+        time.sleep(1) # give the motorplate time to cool down or it will not respon d to further commands
+
         # set motor to slow speed, short accel, and start turning
-        self.stepper_config(dir='CCW', speed=400, accelleration=0.2)
+        self.stepper_config(dir='CW', speed=100, accelleration=0.2)
         self.hw.stepperJOG(0, 'A')
         timer = 0
         interrupted = 0
@@ -114,7 +121,7 @@ class Motor(object):
 
         self.hw.stepperSTOP(0, 'A')
         self.stepper_config(dir='CW', speed=oldspeed, accelleration=oldaccel)
-        motor.hw.getINTflag0(0)
+        self.hw.getINTflag0(0)
 
         if interrupted:
             self._position = 0
@@ -129,7 +136,7 @@ class Motor(object):
 
         if type == 'abs':
             steps = val - self._position
-            if val < 0:
+            if val < 1:
                 raise MotorError('Will not move outside allowed range')
         elif type == 'rel':
             steps = val
@@ -140,6 +147,8 @@ class Motor(object):
 
         if steps > 0:
             self.direction = 'CCW'
+        elif steps == 0:
+            return
         else:
             self.direction = 'CW'
 
@@ -150,7 +159,7 @@ class Motor(object):
 
         self._position = self._position + steps
 
-    def stepper_config(self, addr=0, motor='A', dir='NA', resolution='M8', speed='NA', accelleration='NA'):
+    def stepper_config(self, addr=0, motor='A', dir='NA', resolution=0, speed='NA', accelleration='NA'):
         '''configures stepper motor and saves values for future reference.'''
         self._direction = self._direction if dir == 'NA' else dir
         self._speed = self._speed if speed == 'NA' else speed
@@ -194,5 +203,25 @@ class Motor(object):
                 self._powered = False
 
 
+class LEDController:
+    def __init__(self):
+        GPIO.setmode(GPIO.BCM)
+        GPIO.GPIOInit()
+        self.pin = cfg.get('led_pin')
+        GPIO.setup(self.pin, GPIO.OUT)
+        self.on = False
+
+    @property
+    def on(self):
+        return self._on
+
+    @on.setter
+    def on(self, val):
+        if val in [True, False]:
+            GPIO.output(self.pin, int(val))
+            self._on = val
+
+
 cam = Camera()
 motor = Motor()
+led = LEDController()

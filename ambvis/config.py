@@ -13,6 +13,7 @@ class Config(object):
         'secret': '',        # secret key for flask sessions
         'name': 'ambvis',    # the name of this ambvis instance
         'debug': True,       # debug logging
+        'led_pin': 17,       # GPIO pin to use for LED control
     }
 
     config = {}
