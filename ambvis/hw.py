@@ -206,7 +206,6 @@ class Motor(object):
 class LEDController:
     def __init__(self):
         GPIO.setmode(GPIO.BCM)
-        GPIO.GPIOInit()
         self.pin = cfg.get('led_pin')
         GPIO.setup(self.pin, GPIO.OUT)
         self.on = False
