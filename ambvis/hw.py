@@ -1,7 +1,9 @@
 import io
 import time
 from threading import Condition
+from concurrent.futures import ProcessPoolExecutor
 
+from PIL import Image
 import RPi.GPIO as GPIO
 from picamerax import PiCamera
 import piplates.MOTORplate as MOTOR
@@ -31,10 +33,11 @@ class StreamingOutput(object):
 
 class Camera(object):
     def __init__(self):
-        self.camera = PiCamera()
+        self.camera = PiCamera(resolution=(4056, 3040))
         self._streaming = False
         self.still_output = io.BytesIO()
         self.streaming_output = StreamingOutput()
+        self.executor = ProcessPoolExecutor(max_workers=3)
 
     def __enter__(self):
         return self
@@ -44,6 +47,7 @@ class Camera(object):
 
     def close(self):
         self.camera.close()
+        self.executor.shutdown(wait=True)
 
     @property
     def streaming(self):
@@ -53,9 +57,11 @@ class Camera(object):
     def streaming(self, val):
         if self._streaming != val:
             if not self._streaming:
+                self.camera.resolution = (1280, 720)
                 self.camera.start_recording(self.streaming_output, format='h264', profile='baseline', resize=(1280, 720))
                 self._streaming = True
             else:
+                self.camera.resolution = (4056, 3040)
                 self.camera.stop_recording()
                 self._streaming = False
 
@@ -67,6 +73,13 @@ class Camera(object):
             self.camera.capture(self.still_output, format="png")
             self.still_output.seek(0)
             return self.still_output
+
+    def fast_capture(self, filename):
+        stream = io.BytesIO()
+        self.camera.capture(stream, format='rgb')
+        stream.seek(0)
+        im = Image.frombytes('RGB', (4064, 3040), stream.read())
+        self.executor.submit(im.save, (filename,))
 
 
 class MotorError(Exception):
