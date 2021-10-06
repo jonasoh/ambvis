@@ -9,8 +9,18 @@ from picamerax import PiCamera
 import piplates.MOTORplate as MOTOR
 
 from ambvis.config import cfg
+from ambvis.logger import log, debug
 
 GPIO.setmode(GPIO.BCM)
+
+
+def _rgb_to_image(data, filename):
+    try:
+        im = Image.frombytes('RGB', (4064, 3040), data)
+        im.save(filename)
+    except Exception as e:
+        log('Unable to save image ' + filename + ': ' + str(e))
+
 
 class StreamingOutput(object):
     def __init__(self):
@@ -78,8 +88,7 @@ class Camera(object):
         stream = io.BytesIO()
         self.camera.capture(stream, format='rgb')
         stream.seek(0)
-        im = Image.frombytes('RGB', (4064, 3040), stream.read())
-        self.executor.submit(im.save, (filename,))
+        self.executor.submit(_rgb_to_image, data=stream.read(), filename=filename)
 
 
 class MotorError(Exception):
