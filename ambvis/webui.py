@@ -1,4 +1,5 @@
 import os
+import time
 import hashlib
 import subprocess
 from threading import Timer
@@ -11,13 +12,14 @@ from flask import Flask, Response, request, abort, flash, redirect, url_for, ren
 
 from ambvis import auth
 from ambvis import motor_control
-from ambvis.hw import cam, motor
+from ambvis.hw import cam, motor, led
 from ambvis.config import cfg
 from ambvis import filemanager
 from ambvis import system_settings
 from ambvis.logger import log, debug
 from ambvis.video_stream import Broadcaster
 from ambvis.decorators import public_route, not_while_running
+
 
 def create_app():
     app = Flask(__name__)
@@ -33,6 +35,7 @@ def create_app():
     app.register_blueprint(system_settings.bp)
     return app
 
+
 app = create_app()
 app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
@@ -41,12 +44,17 @@ WebSocketPlugin(cherrypy.engine).subscribe()
 cherrypy.tools.websocket = WebSocketTool()
 
 
-@app.route('/index.html')
-@app.route('/')
-def index():
-    return render_template('index.jinja')
-
 def run():
+    '''start web ui and initialize hardware peripherals'''
+    log('Initializing hardware...')
+    # flash led to show it is working
+    led.on = True
+    time.sleep(1)
+    led.on = False
+
+    # home the motor
+    motor.find_home()
+
     cam.streaming = True
     broadcast_thread = Broadcaster(camera=cam)
     try:
@@ -63,6 +71,12 @@ def run():
         motor.close()
 
 
+@app.route('/index.html')
+@app.route('/')
+def index():
+    return render_template('index.jinja')
+
+
 @app.route('/still.png')
 def get_image():
     return Response(cam.image, mimetype='image/png')
@@ -70,6 +84,7 @@ def get_image():
 
 def run_shutdown():
     subprocess.run(['sudo', 'shutdown', '-h', 'now'])
+
 
 @not_while_running
 @app.route('/shutdown')
