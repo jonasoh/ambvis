@@ -3,6 +3,7 @@ import time
 from threading import Condition
 from concurrent.futures import ProcessPoolExecutor
 
+import cherrypy
 from PIL import Image
 import RPi.GPIO as GPIO
 from picamerax import PiCamera
@@ -20,6 +21,13 @@ def _rgb_to_image(data, filename):
         im.save(filename)
     except Exception as e:
         log('Unable to save image ' + filename + ': ' + str(e))
+
+
+def update_websocket():
+    status = {'led': led.on,
+              'position': motor._position,
+              'streaming': cam.streaming}
+    cherrypy.engine.publish('websocket-broadcast', 'test message...')
 
 
 class StreamingOutput(object):
@@ -129,7 +137,7 @@ class Motor(object):
         time.sleep(1) # give the motorplate time to cool down or it will not respon d to further commands
 
         # set motor to slow speed, short accel, and start turning
-        self.stepper_config(dir='CW', speed=100, accelleration=0.2)
+        self.stepper_config(dir='CW', speed=200, accelleration=0.2)
         self.hw.stepperJOG(0, 'A')
         timer = 0
         interrupted = 0
@@ -158,7 +166,7 @@ class Motor(object):
 
         if type == 'abs':
             steps = val - self._position
-            if val < 1:
+            if val < 0:
                 raise MotorError('Will not move outside allowed range')
         elif type == 'rel':
             steps = val

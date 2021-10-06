@@ -2,9 +2,10 @@ import os
 import time
 import hashlib
 import subprocess
-from threading import Timer
+from threading import Timer, Thread
 
 import cherrypy
+from cherrypy.process.plugins import Daemonizer
 from ws4py.websocket import WebSocket
 from wsgiref.simple_server import make_server
 from ws4py.server.cherrypyserver import WebSocketPlugin, WebSocketTool
@@ -12,7 +13,7 @@ from flask import Flask, Response, request, abort, flash, redirect, url_for, ren
 
 from ambvis import auth
 from ambvis import motor_control
-from ambvis.hw import cam, motor, led
+from ambvis.hw import cam, motor, led, update_websocket
 from ambvis.config import cfg
 from ambvis import filemanager
 from ambvis import system_settings
@@ -56,13 +57,16 @@ def run():
     motor.find_home()
 
     cam.streaming = True
+    ws_t = Thread(target=continuously_update_websocket, daemon=True)
+    ws_t.start()
     broadcast_thread = Broadcaster(camera=cam)
     try:
         #app.run(host="0.0.0.0", port=8080)
         broadcast_thread.daemon = True
         broadcast_thread.start()
         cherrypy.tree.graft(app, '/')
-        cherrypy.tree.mount(WebSocketRoot, '/video', config={'/frame': {'tools.websocket.on': True, 'tools.websocket.handler_cls': StreamingWebSocket}})
+        cherrypy.tree.mount(StreamingWebSocketRoot, '/video', config={'/frame': {'tools.websocket.on': True, 'tools.websocket.handler_cls': StreamingWebSocket}})
+        cherrypy.tree.mount(StatusWebSocketRoot, '/api', config={'/ws': {'tools.websocket.on': True, 'tools.websocket.handler_cls': StatusWebSocket}})
         cherrypy.server.bind_addr = ('0.0.0.0', 8080)
         cherrypy.engine.start()
         cherrypy.engine.block()
@@ -119,11 +123,26 @@ def restart():
 
 
 class StreamingWebSocket(WebSocket):
+    '''the video streaming websocket broadcasts only binary data'''
     def opened(self):
-        print("New client connected")
+        print("New video client connected")
+
+    def send(self, payload, binary=False):
+        if binary == True:
+            super().send(payload, binary)
 
 
-class WebSocketRoot:
+class StatusWebSocket(WebSocket):
+    '''the status websocket only broadcasts non-binary data'''
+    def opened(self):
+        print("New status client connected")
+
+    def send(self, payload, binary=False):
+        if binary == False:
+            super().send(payload, binary)
+
+
+class StreamingWebSocketRoot:
     @cherrypy.expose
     def index():
         pass
@@ -131,3 +150,20 @@ class WebSocketRoot:
     @cherrypy.expose
     def frame():
         pass
+
+
+class StatusWebSocketRoot:
+    @cherrypy.expose
+    def index():
+        pass
+    
+    @cherrypy.expose
+    def ws():
+        pass
+
+
+def continuously_update_websocket():
+    '''send out a status message as json every second'''
+    while True:
+        update_websocket()
+        time.sleep(1)
