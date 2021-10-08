@@ -17,6 +17,7 @@ from ambvis.hw import cam, motor, led, update_websocket
 from ambvis.config import cfg
 from ambvis import filemanager
 from ambvis import system_settings
+from ambvis import imaging_settings
 from ambvis.logger import log, debug
 from ambvis.video_stream import Broadcaster
 from ambvis.decorators import public_route, not_while_running
@@ -34,6 +35,7 @@ def create_app():
     app.register_blueprint(filemanager.bp)
     app.register_blueprint(motor_control.bp)
     app.register_blueprint(system_settings.bp)
+    app.register_blueprint(imaging_settings.bp)
     return app
 
 
@@ -122,6 +124,18 @@ def restart():
     return render_template('shutdown.jinja', message='Restarting web UI', refresh=15, longmessage='Please allow up to 15 seconds for the web UI to restart.')
 
 
+@not_while_running
+@app.route('/led/<val>')
+def set_led(val):
+    if val in ['on', 'off']:
+        if val == 'on':
+            led.on = True
+        else:
+            led.on = False
+        return Response('OK', 200)
+    abort(404)
+
+
 class StreamingWebSocket(WebSocket):
     '''the video streaming websocket broadcasts only binary data'''
     def opened(self):
@@ -134,12 +148,16 @@ class StreamingWebSocket(WebSocket):
 
 class StatusWebSocket(WebSocket):
     '''the status websocket only broadcasts non-binary data'''
+    last_message = None
+
     def opened(self):
         print("New status client connected")
 
     def send(self, payload, binary=False):
         if binary == False:
-            super().send(payload, binary)
+            if payload != self.last_message:
+                self.last_message = payload
+                super().send(payload, binary)
 
 
 class StreamingWebSocketRoot:

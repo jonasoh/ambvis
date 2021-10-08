@@ -1,4 +1,5 @@
 import io
+import json
 import time
 from threading import Condition
 from concurrent.futures import ProcessPoolExecutor
@@ -24,10 +25,10 @@ def _rgb_to_image(data, filename):
 
 
 def update_websocket():
-    status = {'led': led.on,
+    status = {'led': int(led.on),
               'position': motor._position,
-              'streaming': cam.streaming}
-    cherrypy.engine.publish('websocket-broadcast', 'test message...')
+              'streaming': int(cam.streaming)}
+    cherrypy.engine.publish('websocket-broadcast', json.dumps(status))
 
 
 class StreamingOutput(object):
@@ -231,6 +232,10 @@ class Motor(object):
             else:
                 self.hw.stepperOFF(0, 'A')
                 self._powered = False
+
+    @property
+    def position(self):
+        return self._position
 
 
 class LEDController:
