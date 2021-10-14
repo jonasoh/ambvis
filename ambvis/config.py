@@ -14,6 +14,7 @@ class Config(object):
         'name': 'ambvis',    # the name of this ambvis instance
         'debug': True,       # debug logging
         'led_pin': 17,       # GPIO pin to use for LED control
+        'positions': [],     # saved positions for imaging
     }
 
     config = {}

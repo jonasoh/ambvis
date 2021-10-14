@@ -8,13 +8,14 @@
 </div>
 <div class="controls">
     <label class="switch" for="led_checkbox">
-    <input type="checkbox" id="led_checkbox" onclick="toggle_led(this.checked)" {% if led %} checked {% endif %} />
+    <input type="checkbox" id="led_checkbox" onclick="toggle_led(this.checked)" {% if led %} checked {% endif %}/>
     <div class="slider round"></div>
-    LED</label>
+    </label>
     Current position: <span id='motor_position'>{{ position }}</span>
     <!-- spinner -->
     <div class="spinner"><div class="lds-roller" id="spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>
-    <input type='number' value=0 id='move'> <a href="#" onclick="move_abs()">Move abs</a> <a href="#" onclick="move_rel()">Move rel</a>
+    <input type='number' value=0 id='move'> <a href="#" onclick="move_abs()" class="pure-button">Move abs</a> <a href="#" onclick="move_rel()" class="pure-button">Move rel</a>
+    <a href="/settings/imaging/save_pos" type="button" onclick="save_position()" class="pure-button">Save position</a>
     <span id="response"></span>
 <div class="content">
 
@@ -25,7 +26,16 @@
     <script src="{{ url_for('static', filename='client.js') }}"></script>
 </div>
 
-
+<div class="saved-positions-header">
+    <h2>Saved positions</h2>
+</div>
+<div class="saved-positions">
+    <ul>
+    {% for pos in positions %}
+        <li><img src="/settings/imaging/thumb/{{ pos }}" width=200>{{ pos }} <a href="#" onclick="bg_get('/motor/move/abs/{{ pos }}')" class="pure-button">Move there</a> <a href="/settings/imaging/del_pos/{{ pos }}" class="pure-button">Delete</a></li>
+    {% endfor %}
+    </ul>
+</div>
 
 
 {% endblock %}
