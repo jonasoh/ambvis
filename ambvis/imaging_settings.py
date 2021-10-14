@@ -23,7 +23,7 @@ def save_pos():
     saved_pos = cfg.get('positions')
     if motor.position in saved_pos:
         flash('Position already saved.')
-        return redirect(url_for('settings'))
+        return redirect(url_for('.settings'))
     
     prev_led = led.on
     led.on = True
@@ -35,6 +35,7 @@ def save_pos():
     thumb.save(os.path.join(cfg.cfgdir, 'thumb_' + str(motor.position) + '.jpg'))
     saved_pos.append(motor.position)
     cfg.set('positions', sorted(saved_pos))
+    flash('Position saved.')
     return redirect(url_for('.settings'))
 
 
