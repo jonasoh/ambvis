@@ -8,6 +8,22 @@ body {
     height: auto;
 }
 
+ul.flashes {
+    margin-left: 0px;
+    margin-right: 0px;
+    margin-top: 0px;
+    padding: 10px;
+    background-color: #1f8dd6;
+    text-align: center;
+    color: #fff;
+}
+
+ul.flashes li {
+    list-style-type: none;
+    font-weight: bold;
+    font-size: 16px;
+}
+
 /*
 Add transition to containers so they can push in and out.
 */
