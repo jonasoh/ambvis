@@ -75,6 +75,7 @@ def run():
     finally:
         cam.close()
         motor.close()
+        led.on = False
 
 
 @app.route('/index.html')
