@@ -80,8 +80,8 @@ class Camera(object):
                 self.camera.start_recording(self.streaming_output, format='h264', profile='baseline', resize=(1280, 720))
                 self._streaming = True
             else:
-                self.camera.resolution = (4056, 3040)
                 self.camera.stop_recording()
+                self.camera.resolution = (4056, 3040)
                 self._streaming = False
 
     @property
