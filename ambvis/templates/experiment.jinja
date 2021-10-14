@@ -1,0 +1,39 @@
+{% extends "layout.jinja" %}
+{% block title %}Experiment setup{% endblock %}
+{% block content %}
+<div class="header">
+    <h1>Experiment setup</h1>
+</div>
+{% if not running %}
+<div class="content">
+    <form method="post" class="pure-form pure-form-aligned">
+        <fieldset>
+            <input type="hidden" name="action" value="start">
+            <div class="pure-control-group">
+                <label for="expname">Experiment name</label>
+                <input type="text" id="expname" />
+            </div>
+            <div class="pure-control-group">
+                <label for="imgfreq">Image every</label>
+                <input type="number" id="imgfreq" />
+                <span class="pure-form-message-inline">minutes</span>
+            </div>
+            <div class="pure-controls">
+                <button type="submit" class="pure-button pure-button-primary">Start experiment</button>
+            </div>
+        </fieldset>
+    </form>
+</div>
+{% else %}
+<div class="content">
+    <form method="post" class="pure-form pure-form-aligned">
+        <fieldset>
+            <div class="pure-controls">
+                <input type="hidden" name="action" value="stop">
+                <button type="submit" class="pure-button pure-button-primary">Stop experiment</button>
+            </div>
+        </fieldset>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

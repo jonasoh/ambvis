@@ -6,6 +6,7 @@ from threading import Timer, Thread
 
 import cherrypy
 from cherrypy.process.plugins import Daemonizer
+from werkzeug import datastructures
 from ws4py.websocket import WebSocket
 from wsgiref.simple_server import make_server
 from ws4py.server.cherrypyserver import WebSocketPlugin, WebSocketTool
@@ -20,6 +21,7 @@ from ambvis import system_settings
 from ambvis import imaging_settings
 from ambvis.logger import log, debug
 from ambvis.video_stream import Broadcaster
+from ambvis.experimenter import Experimenter
 from ambvis.decorators import public_route, not_while_running
 
 
@@ -40,6 +42,9 @@ def create_app():
 
 
 app = create_app()
+experimenter = Experimenter()
+experimenter.daemon = True
+experimenter.start()
 app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
 
@@ -73,6 +78,7 @@ def run():
         cherrypy.engine.start()
         cherrypy.engine.block()
     finally:
+        experimenter.stop_experiment = experimenter.quit = True
         cam.close()
         motor.close()
         led.on = False
@@ -81,12 +87,15 @@ def run():
 @app.route('/index.html')
 @app.route('/')
 def index():
-    return render_template('index.jinja')
+    if experimenter.running:
+        return redirect(url_for('experiment'))
+    else:
+        return render_template('index.jinja')
 
 
 @app.route('/still.png')
 def get_image():
-    return Response(cam.image, mimetype='image/png')
+    return Response(cam.image.read(), mimetype='image/png')
 
 
 def run_shutdown():
@@ -136,6 +145,33 @@ def set_led(val):
         return Response('OK', 200)
     abort(404)
 
+
+@app.route('/experiment', methods=['GET', 'POST'])
+def experiment():
+    if request.method == 'GET':
+        print(experimenter.running)
+        return render_template('experiment.jinja', running=experimenter.running)
+    else:
+        if request.form['action'] == 'start':
+            if request.form.get('expname') is None:
+                expname = time.strftime("%Y-%m-%d Unnamed experiment", time.localtime())
+            else:
+                expname = request.form.ge('expname')
+            experimenter.dir = os.path.join(os.path.expanduser('~'), expname)
+
+            if request.form.get('imgfreq') is None:
+                experimenter.imgfreq = 60
+            else:
+                experimenter.imgfreq = int(request.form.get('imgfreq'))
+
+            experimenter.stop_experiment = False
+            experimenter.status_change.set()
+        elif request.form['action'] == 'stop':
+            experimenter.stop_experiment = True
+
+        time.sleep(0.5)
+        return render_template('experiment.jinja', running=experimenter.running)
+        
 
 class StreamingWebSocket(WebSocket):
     '''the video streaming websocket broadcasts only binary data'''

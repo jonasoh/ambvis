@@ -7,17 +7,19 @@ from ambvis import globals
 from ambvis.hw import motor, led, cam
 from ambvis.config import Config
 from ambvis.logger import log, debug
-from ambvis.decorators import public_route
+from ambvis.decorators import not_while_running, public_route
 
 cfg = Config()
 bp = Blueprint('imaging_settings', __name__, url_prefix='/settings/imaging')
 
 
+@not_while_running
 @bp.route('/')
 def settings():
     return render_template('imaging_settings.jinja', led=led.on, position=motor._position, positions=cfg.get('positions'))
 
 
+@not_while_running
 @bp.route('/save_pos')
 def save_pos():
     saved_pos = cfg.get('positions')
@@ -38,7 +40,7 @@ def save_pos():
     flash('Position saved.')
     return redirect(url_for('.settings'))
 
-
+@not_while_running
 @bp.route('/del_pos/<int:num>')
 def del_pos(num):
     saved_pos = cfg.get('positions')
