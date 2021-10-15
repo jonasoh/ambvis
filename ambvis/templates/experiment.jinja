@@ -26,14 +26,19 @@
 </div>
 {% else %}
 <div class="content">
-    <form method="post" class="pure-form pure-form-aligned">
-        <fieldset>
-            <div class="pure-controls">
-                <input type="hidden" name="action" value="stop">
-                <button type="submit" class="pure-button pure-button-primary">Stop experiment</button>
-            </div>
-        </fieldset>
-    </form>
+    <div>
+        Experiment running since {{ starttime }}, imaging every {{ imgfreq }} minutes.
+    </div>
+    <div>
+        <form method="post" class="pure-form pure-form-aligned">
+            <fieldset>
+                <div class="pure-controls">
+                    <input type="hidden" name="action" value="stop">
+                    <button type="submit" class="pure-button pure-button-primary">Stop experiment</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
 </div>
 {% endif %}
 {% endblock %}

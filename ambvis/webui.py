@@ -149,15 +149,14 @@ def set_led(val):
 @app.route('/experiment', methods=['GET', 'POST'])
 def experiment():
     if request.method == 'GET':
-        print(experimenter.running)
-        return render_template('experiment.jinja', running=experimenter.running)
+        return render_template('experiment.jinja', running=experimenter.running, starttime=experimenter.starttime, imgfreq=experimenter.imgfreq)
     else:
         if request.form['action'] == 'start':
             if request.form.get('expname') is None:
                 expname = time.strftime("%Y-%m-%d Unnamed experiment", time.localtime())
             else:
-                expname = request.form.get('expname')
-            experimenter.dir = os.path.join(os.path.expanduser('~'), expname)
+                expname = time.strftime("%Y-%m-%d ", time.localtime()) + request.form.get('expname')
+            experimenter.dir = os.path.join(os.path.expanduser('~'), 'ambvis', expname)
 
             if request.form.get('imgfreq') is None:
                 experimenter.imgfreq = 60
@@ -170,7 +169,7 @@ def experiment():
             experimenter.stop_experiment = True
 
         time.sleep(0.5)
-        return render_template('experiment.jinja', running=experimenter.running)
+        return render_template('experiment.jinja', running=experimenter.running, starttime=experimenter.starttime, imgfreq=experimenter.imgfreq)
         
 
 class StreamingWebSocket(WebSocket):

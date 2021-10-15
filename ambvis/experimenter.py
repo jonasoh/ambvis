@@ -17,6 +17,7 @@ class Experimenter(threading.Thread):
         self.stop_experiment = False
         self.status_change = threading.Event()
         self.quit = False
+        self.starttime = None
         super().__init__()
 
     def run(self):
@@ -31,6 +32,7 @@ class Experimenter(threading.Thread):
         saved_pos = cfg.get('positions')
         cam.streaming = False
         log('Starting experiment ' + os.path.basename(self.dir))
+        self.starttime = time.strftime("%Y-%m-%d %H:%M", time.localtime())
 
         # fix AWB
         led.on = True
