@@ -156,7 +156,7 @@ def experiment():
             if request.form.get('expname') is None:
                 expname = time.strftime("%Y-%m-%d Unnamed experiment", time.localtime())
             else:
-                expname = request.form.ge('expname')
+                expname = request.form.get('expname')
             experimenter.dir = os.path.join(os.path.expanduser('~'), expname)
 
             if request.form.get('imgfreq') is None:
