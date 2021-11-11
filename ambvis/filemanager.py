@@ -30,7 +30,7 @@ def verify_dir(check_dir):
 @bp.route('/')
 def file_browser():
     dirs = []
-    dir = os.path.expanduser('~')
+    dir = os.path.join(os.path.expanduser('~'), 'ambvis')
     df = shutil.disk_usage(dir)
     diskspace = round(df.free / 1024 ** 3, 1)
 
@@ -42,7 +42,7 @@ def file_browser():
 @bp.route('/get/<exp_dir>.zip')
 def make_zipfile(exp_dir):
     'creates a zipfile on the fly, and streams it to the client'
-    dir = os.path.expanduser('~')
+    dir = os.path.join(os.path.expanduser('~'), 'ambvis')
     zip_dir = os.path.abspath(os.path.join(dir, exp_dir))
     if verify_dir(zip_dir):
         p = subprocess.Popen(['/usr/bin/zip', '-r', '-0', '-',
@@ -54,7 +54,7 @@ def make_zipfile(exp_dir):
 
 @bp.route('/delete/<exp_dir>/', methods=['GET', 'POST'])
 def delete_dir(exp_dir):
-    dir = os.path.expanduser('~')
+    dir = os.path.join(os.path.expanduser('~'), 'ambvis')
     del_dir = os.path.abspath(os.path.join(dir, exp_dir))
 
     if request.method == 'GET':
